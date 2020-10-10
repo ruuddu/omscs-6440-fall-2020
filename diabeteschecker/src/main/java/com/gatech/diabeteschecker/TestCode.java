@@ -1,65 +1,65 @@
 package com.gatech.diabeteschecker;
 
-//import javax.persistence.*;
+import javax.persistence.*;
 
-//@Entity
+@Entity
 public class TestCode {
-//    @Id
-//    @Column(name = "id", unique = true, nullable = false)
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private long id;
-//
-//    @Column(name = "name", length = 60, nullable = false)
-//    private String name;
-//
-//    @Column
-//    private  String description;
-//
-//    TestCode() {
-//
-//    }
-//
-//    TestCode(String name, String description){
-//        this.name = name;
-//        this.description = description;
-//    }
-//
-//    TestCode(long id, String name, String description){
-//        this.id = id;
-//        this.name = name;
-//        this.description = description;
-//    }
-//
-//    public long getId() {
-//        return id;
-//    }
-//
-//    public void setId(long id) {
-//        this.id = id;
-//    }
-//
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public void setName(String name) {
-//        this.name = name;
-//    }
-//
-//    public String getDescription() {
-//        return description;
-//    }
-//
-//    public void setDescription(String description) {
-//        this.description = description;
-//    }
-//
-//    @Override
-//    public String toString() {
-//        return "TestCode{" +
-//                "id=" + id +
-//                ", name='" + name + '\'' +
-//                ", description='" + description + '\'' +
-//                '}';
-//    }
+    @Id
+    @Column(name = "id", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    private String code;
+
+    private double normalLimit;
+
+    private double prediabetesMin;
+
+    private double prediabetesMax;
+
+    private double diabetesLimit;
+
+    public long getId(){
+        return id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public double getNormalLimit() {
+        return normalLimit;
+    }
+
+    public void setNormalLimit(double normalLimit) {
+        this.normalLimit = normalLimit;
+    }
+
+    public double getPrediabetesMin() {
+        return prediabetesMin;
+    }
+
+    public void setPrediabetesMin(double prediabetesMin) {
+        this.prediabetesMin = prediabetesMin;
+    }
+
+    public double getPrediabetesMax() {
+        return prediabetesMax;
+    }
+
+    public void setPrediabetesMax(double prediabetesMax) {
+        this.prediabetesMax = prediabetesMax;
+    }
+
+    public double getDiabetesLimit() {
+        return diabetesLimit;
+    }
+
+    public void setDiabetesLimit(double diabetesLimit) {
+        this.diabetesLimit = diabetesLimit;
+    }
 }

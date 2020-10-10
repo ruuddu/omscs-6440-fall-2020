@@ -4,38 +4,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class ConditionController {
-//    @Autowired
-//    TestCodeRepository testCodeRepository;
+public class TestCodeController {
+
+    @Autowired
+    TestCodeService testCodeService;
 
     @RequestMapping("/")
     public String index() {
         return "Hello there";
     }
 
-//    @GetMapping(value = "/")
-//    public ResponseEntity index() {
-//        return ResponseEntity.ok(testCodeRepository.findAll());
-//    }
+    @GetMapping(value = "/getAllTestCode")
+    public List<TestCode> findAll() {
+        return testCodeService.findAll();
+    }
 
-//    @GetMapping(value = "/bucket")
-//    public ResponseEntity getBucket(@RequestParam(value = "id") Long id) {
-//        Optional<TestCode> foundTestCode = testCodeRepository.findById(id);
-//
-//        if (foundTestCode.isPresent()) {
-//            return ResponseEntity.ok(foundTestCode.get());
-//        } else {
-//            return ResponseEntity.badRequest().body("No bucket with specified id " + id + " found");
-//        }
-//    }
-//
-//    @PostMapping(value = "/")
-//    public ResponseEntity addToTestCode(@RequestParam(value = "name") String name, @RequestParam(value = "description") String desc) {
-//        return ResponseEntity.ok(testCodeRepository.save(new TestCode(name, desc)));
-//    }
+    @PostMapping(value = "/testCode")
+    public TestCode addTestCode(@RequestBody TestCode testCode) {
+        return testCodeService.addCode(testCode);
+    }
+
+    @PutMapping(value = "/testCode")
+    public TestCode updateTestCode(@RequestBody TestCode testCode) {
+        return testCodeService.updateCode(testCode);
+    }
 //
 //    @PutMapping(value = "/")
 //    public ResponseEntity updateTestCode(@RequestParam(value = "name") String name, @RequestParam(value = "id") Long id, @RequestParam(value = "description") String desc) {
