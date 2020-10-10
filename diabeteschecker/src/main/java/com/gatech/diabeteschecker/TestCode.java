@@ -1,6 +1,6 @@
 package com.gatech.diabeteschecker;
 
-import javax.persistence.*;
+//import javax.persistence.*;
 
 //@Entity
 public class TestCode {
