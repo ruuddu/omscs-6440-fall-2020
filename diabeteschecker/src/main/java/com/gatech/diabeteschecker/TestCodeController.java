@@ -26,7 +26,8 @@ public class TestCodeController {
     }
 
     @PostMapping(value = "/testCode")
-    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
+//    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
+    @CrossOrigin
     public TestCode addTestCode(@RequestBody TestCode testCode) {
         return testCodeService.addCode(testCode);
     }
