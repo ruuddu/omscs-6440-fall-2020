@@ -18,17 +18,20 @@ public class TestCodeController {
         return "Hello there";
     }
 
+    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
     @GetMapping(value = "/getAllTestCode")
     public List<TestCode> findAll() {
         return testCodeService.findAll();
     }
 
     @PostMapping(value = "/testCode")
+    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
     public TestCode addTestCode(@RequestBody TestCode testCode) {
         return testCodeService.addCode(testCode);
     }
 
     @PutMapping(value = "/testCode")
+    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
     public TestCode updateTestCode(@RequestBody TestCode testCode) {
         return testCodeService.updateCode(testCode);
     }
