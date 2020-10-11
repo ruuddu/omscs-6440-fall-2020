@@ -18,7 +18,8 @@ public class TestCodeController {
         return "Hello there";
     }
 
-    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
+//    @CrossOrigin(origins = "https://limitless-wildwood-48331.herokuapp.com/")
+    @CrossOrigin
     @GetMapping(value = "/getAllTestCode")
     public List<TestCode> findAll() {
         return testCodeService.findAll();
