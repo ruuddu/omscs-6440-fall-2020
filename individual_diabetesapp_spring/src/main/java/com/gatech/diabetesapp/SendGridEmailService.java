@@ -4,19 +4,27 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Attachments;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
-import com.sun.xml.internal.ws.api.message.Attachment;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sendgrid.*;
 
+import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.List;
+
 
 @Service
 public class SendGridEmailService {
@@ -26,67 +34,86 @@ public class SendGridEmailService {
     private SendGrid sendGridClient;
 
     @Autowired
-    public SendGridEmailService(SendGrid sendGridClient) {
-        this.sendGridClient = sendGridClient;
+    private BloodGlucoseService bloodGlucoseService;
+
+//    @Autowired
+    public SendGridEmailService() {
+        this.sendGridClient = new SendGrid(System.getenv("SENDGRID_API_KEY"));
     }
 
-    public void sendHTML(String from, String to, String subject, String body) throws IOException, ParseException {
-        Response response = sendEmail(from, to, subject, new Content("text/html", body));
-//        LOG.info("Status: " + response.getStatusCode() + ", Body: " + response.getBody() + ", Headers: "
-//                + response.getHeaders());
-    }
 
-    private void plotReport() {
+
+
+    private String plotReport(List<BloodGlucose> bloodGlucoses) {
+        Path temp = null;
+        try {
+
+            // Create an temporary file
+            temp = Files.createTempFile("daily_report", ".png");
+            LOG.error("Temp file's path: " + temp.toString());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        // Assign X and Y data
-//        for(int i = 0; i < params.length; i++) {
-//            dataset.addValue(finalFitnessValues[i], "pairs", params[i]);
-//        }
+        Format formatter = new SimpleDateFormat("MM/dd/yy");
 
-        GraphPlot plot = new GraphPlot("Fitness Values vs GA-Pop-Mate-Mutate");
-        plot.plotCategoryChart(dataset, "GA-Pop-Mate-Mutate", "Fitness Value");
-        plot.saveChart("travel_salesman_new_training_ga_fitness_vs_GA_Pop_Mate_Mutate.png");
+
+        for (BloodGlucose singleResult : bloodGlucoses) {
+            singleResult.setDateString(formatter.format(singleResult.getCreatedDate()));
+            dataset.setValue(singleResult.getFasting(), "", singleResult.getDateString());
+        }
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Daily Blood Glucose Level",
+                "Date",
+                "Fasting (mg/dL)",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false);
+
+        File chartFile = new File(temp.toString());
+
+        try {
+            ChartUtils.saveChartAsPNG(chartFile, barChart, 800, 400);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return temp.toString();
     }
 
-    private Response sendEmail(String fromM, String toM, String subjectM, Content content) throws IOException, ParseException {
+    public Response sendEmail(String fromM, String toM, String subjectM, String body) {
+        Content content = new Content("text/html", body);
+
         Email from = new Email(fromM);
         String subject = subjectM;
         Email to = new Email(toM);
         Mail mail = new Mail(from, subject, to, content);
 
+        List<BloodGlucose> bloodGlucoseResult = bloodGlucoseService.findAll();
 
-        BloodGlucose bg = new BloodGlucose(1, 80, 10,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/15/2020"));
-        BloodGlucose bg2 = new BloodGlucose(2, 95, 115,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/16/2020"));
-        BloodGlucose bg3 = new BloodGlucose(3, 120, 140,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/17/2020"));
-        BloodGlucose bg4 = new BloodGlucose(4, 100, 120,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/18/2020"));
-        BloodGlucose bg5 = new BloodGlucose(5, 98, 118,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/19/2020"));
-        BloodGlucose bg6 = new BloodGlucose(6, 130, 150,
-                new SimpleDateFormat("MM/dd/yyyy").parse("08/19/2020"));
-        //        List<BloodGlucose> blooldGlucoseResult = bloodGlucoseService.findAll();
-        List<BloodGlucose> blooldGlucoseResult = Arrays.asList(bg, bg2, bg3, bg4, bg5, bg6);
+        String filePath = plotReport(bloodGlucoseResult);
 
-        //https://github.com/sendgrid/sendgrid-java/issues/439
-
-        // build chart with this jfreechart
-        //http://zetcode.com/java/jfreechart/
-
-        // store image file on Spring Boot
-        //https://bezkoder.com/spring-boot-upload-file-database/
-
-
-        // sendgrid via javascript
-        //https://github.com/sendgrid/sendgrid-java/issues/157
 
         Request request = new Request();
         try {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
+
+            Attachments attachments = new Attachments();
+            Path file = Paths.get(filePath);
+            byte[] attachmentContentBytes = Files.readAllBytes(file);
+            Base64 x = new Base64();
+            String imageDataString = x.encodeAsString(attachmentContentBytes);
+            attachments.setContent(imageDataString);
+            attachments.setType("image/png");
+            attachments.setFilename("daily_report.png");
+            attachments.setDisposition("attachment");
+            attachments.setContentId("Banner");
+            mail.addAttachments(attachments);
+
             request.setBody(mail.build());
 
             Response response = this.sendGridClient.api(request);
@@ -94,8 +121,8 @@ public class SendGridEmailService {
                     + response.getBody() + " Headers: " + response.getHeaders());
             return response;
         } catch (IOException ex) {
-            LOG.error("Erroring mail: " + ex.getMessage());
-            throw ex;
+            LOG.error("Error mail: " + ex.getMessage());
         }
+        return null;
     }
 }
